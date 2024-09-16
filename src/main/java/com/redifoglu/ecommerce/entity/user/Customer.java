@@ -4,6 +4,10 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.redifoglu.ecommerce.entity.*;
 import com.redifoglu.ecommerce.enums.Genders;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -28,29 +32,41 @@ public class Customer implements UserDetails {
     @Column(name = "id")
     private Long id;
 
+    @NotNull(message = "First name is required")
+    @Size(min = 3, max = 50, message = "First name must be between 3 and 50 characters")
     @Column(name = "first_name")
     private String firstName;
 
+    @NotNull(message = "Last name is required")
+    @Size(min = 3, max = 50, message = "Last name must be between 3 and 50 characters")
     @Column(name = "last_name")
     private String lastName;
 
+    @NotNull(message = "Password is required")
+    @Size(min = 3, max = 50, message = "Password must be between 3 and 50 characters")
     @Column(name = "password")
     private String password;
 
+    @NotNull(message = "Gender is required")
     @Enumerated(value = EnumType.STRING)
     @Column(name = "gender")
     private Genders gender;
 
+    @NotNull(message = "Email is required")
+    @Email(message = "Email should be valid")
     @Column(name = "email")
     private String email;
 
+    @Size(max = 20, message = "Phone number can be up to 20 characters")
     @Column(name = "phone")
     private String phone;
 
+    @NotNull(message = "Date of birth is required")
     @Column(name = "date_of_birth")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private LocalDate dateOfBirth;
 
+    @NotNull(message = "Age is required")
+    @Min(value = 1, message = "Age must be greater than 0")
     @Column(name = "age")
     private Integer age;
 
@@ -61,7 +77,7 @@ public class Customer implements UserDetails {
     @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL)
     private List<Address> addresses;
 
-    @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL,fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Order> orders;
 
     @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL)

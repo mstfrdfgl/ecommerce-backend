@@ -12,6 +12,7 @@ import com.redifoglu.ecommerce.mapper.CustomerMapper;
 import com.redifoglu.ecommerce.mapper.OrderMapper;
 import com.redifoglu.ecommerce.service.AddressService;
 import com.redifoglu.ecommerce.service.CustomerService;
+import org.aspectj.weaver.ast.Not;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -38,25 +39,24 @@ public class CustomerController extends BaseController{
 
     //VERİLEN İDDEKİ CUSTOMERİ GETİR
     @GetMapping("/{id}")
-    public ResponseEntity<CustomerDTO> findById(@PathVariable Long id) {
+    public ResponseEntity<CustomerDTO> findById(@PathVariable Long id){
         Customer customer = customerService.findById(id);
         CustomerDTO customerDTO = CustomerMapper.entityToDto(customer);
-        return ResponseEntity.ok(customerDTO);
+        return new ResponseEntity<>(customerDTO, HttpStatus.OK);
     }
 
     //TÜM CUSTOMERLARI GETİR
-    @GetMapping
-    public List<CustomerDTO> findAll() {
+    @GetMapping("/customers")
+    public ResponseEntity<List<CustomerDTO>> findAll() {
         List<Customer> customers = customerService.findAll();
         List<CustomerDTO> customerDTOS = new ArrayList<>();
         for (Customer customer : customers) {
-            CustomerDTO customerDTO = CustomerMapper.entityToDto(customer);
-            customerDTOS.add(customerDTO);
+            customerDTOS.add(CustomerMapper.entityToDto(customer));
         }
-        return customerDTOS;
+        return new ResponseEntity<>(customerDTOS, HttpStatus.OK);
     }
 
-    @GetMapping("/{customerId}/orders")
+    @GetMapping("/orders/{customerId}")
     public ResponseEntity<List<OrderDTO>> findOrdersByCustomerId(@PathVariable Long customerId) {
         List<Order> orders = customerService.findOrdersByCustomerId(customerId);
         List<OrderDTO> orderDTOS = new ArrayList<>();
@@ -67,8 +67,31 @@ public class CustomerController extends BaseController{
         return ResponseEntity.ok(orderDTOS);
     }
 
+    @GetMapping("/orders")
+    public ResponseEntity<List<OrderDTO>> findOrdersForAuthenticatedCustomer() {
+        Long authenticatedUserId = getAuthenticatedUserId();
+
+        try {
+            Customer customer = customerService.findById(authenticatedUserId);
+
+            List<Order> orders = customerService.findOrdersByCustomerId(customer.getId());
+            if (orders.isEmpty()) {
+                return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+            }
+
+            List<OrderDTO> orderDTOS = new ArrayList<>();
+            for (Order order : orders) {
+                OrderDTO orderDTO = OrderMapper.entityToDto(order);
+                orderDTOS.add(orderDTO);
+            }
+            return ResponseEntity.ok(orderDTOS);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
     //ADDRESS EKLE
-    @PostMapping("/addAddress")
+    @PostMapping("/address/addAddress")
     public ResponseEntity<AddressDTO> addAddress(@RequestBody Address address) {
         Long authenticatedUserId = getAuthenticatedUserId(); // KİMLİĞİ DOĞRULA
 
@@ -83,9 +106,11 @@ public class CustomerController extends BaseController{
         return new ResponseEntity<>(AddressMapper.entityToDto(savedAddress), HttpStatus.CREATED);
     }
 
-    @DeleteMapping("/{id}")
-    public void deleteById(@PathVariable Long id) {
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<Void> deleteById(@PathVariable Long id) {
+        Customer customer = customerService.findById(id);
         customerService.deleteCustomerById(id);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
 }

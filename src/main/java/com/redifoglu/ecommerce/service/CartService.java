@@ -86,19 +86,5 @@ public class CartService {
         cartRepository.save(cart);
     }
 
-    @Transactional
-    public void deleteCart(Cart cart) {
-        cartRepository.save(cart);
-        cartRepository.delete(cart);
-    }
-
-    @Transactional
-    public Cart createNewCartForCustomer(Customer customer) {
-        Cart newCart = new Cart();
-        newCart.setCustomer(customer);
-        newCart.setItemTotal(0.0);
-        newCart.setGrandTotal(0.0);
-        return cartRepository.save(newCart);
-    }
 
 }
