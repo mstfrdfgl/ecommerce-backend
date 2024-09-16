@@ -36,7 +36,8 @@ public class SecurityConfiguration {
 
                     //HERKESE AÇIK
                     auth.requestMatchers("/welcome/**",
-                            "/auth/register/customer").permitAll();
+                            "/auth/register/customer",
+                            "/seller/products").permitAll();
                     auth.requestMatchers(HttpMethod.GET, "/product/**").permitAll();
                     auth.requestMatchers(HttpMethod.GET, "/category/**").permitAll();
 
@@ -44,7 +45,9 @@ public class SecurityConfiguration {
                     auth.requestMatchers("/auth/register/admin",
                             "/auth/register/seller",
                             "/admin/**",
-                            "/customer/customers").hasAuthority("ADMIN");
+                            "/customer/customers",
+                            "/seller/{id}/**",
+                            "seller/phone").hasAuthority("ADMIN");
                     auth.requestMatchers(HttpMethod.POST, "/category/**").hasAuthority("ADMIN");
                     auth.requestMatchers(HttpMethod.PUT, "/category/**").hasAuthority("ADMIN");
                     auth.requestMatchers(HttpMethod.DELETE, "/category/**").hasAuthority("ADMIN");

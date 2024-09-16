@@ -4,10 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.redifoglu.ecommerce.entity.*;
 import com.redifoglu.ecommerce.enums.Genders;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -43,7 +40,7 @@ public class Customer implements UserDetails {
     private String lastName;
 
     @NotNull(message = "Password is required")
-    @Size(min = 3, max = 50, message = "Password must be between 3 and 50 characters")
+    @Size(min = 3, max = 68, message = "Password must be between 3 and 50 characters")
     @Column(name = "password")
     private String password;
 
@@ -58,6 +55,7 @@ public class Customer implements UserDetails {
     private String email;
 
     @Size(max = 20, message = "Phone number can be up to 20 characters")
+    @Pattern(regexp = "^[0-9]*$", message = "Phone number must contain only digits")
     @Column(name = "phone")
     private String phone;
 

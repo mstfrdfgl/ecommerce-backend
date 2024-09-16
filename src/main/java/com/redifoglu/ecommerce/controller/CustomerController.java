@@ -70,7 +70,6 @@ public class CustomerController extends BaseController{
     @GetMapping("/orders")
     public ResponseEntity<List<OrderDTO>> findOrdersForAuthenticatedCustomer() {
         Long authenticatedUserId = getAuthenticatedUserId();
-
         try {
             Customer customer = customerService.findById(authenticatedUserId);
 

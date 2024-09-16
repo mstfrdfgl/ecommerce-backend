@@ -2,6 +2,9 @@ package com.redifoglu.ecommerce.entity.user;
 
 import com.redifoglu.ecommerce.entity.Product;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -25,12 +28,18 @@ public class Seller implements UserDetails {
     @Column(name = "id")
     private Long id;
 
+    @NotBlank(message = "Name is required")
+    @Size(min = 3, max = 50, message = "Name must be between 3 and 50 characters")
     @Column(name = "name")
     private String name;
 
+    @Size(max = 20, message = "Phone number can be up to 20 characters")
+    @Pattern(regexp = "^[0-9]*$", message = "Phone number must contain only digits")
     @Column(name = "phone")
     private String phone;
 
+    @NotBlank(message = "Password is required")
+    @Size(min = 3, max = 68, message = "Password must be between 3 and 50 characters")
     @Column(name = "password")
     private String password;
 
