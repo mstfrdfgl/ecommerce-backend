@@ -14,7 +14,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/address")
-public class AddressController {
+public class AddressController extends BaseController {
 
     private AddressService addressService;
 
@@ -23,9 +23,12 @@ public class AddressController {
         this.addressService = addressService;
     }
 
+
     @GetMapping
-    public ResponseEntity<List<AddressDTO>> getCustomerAddresses(@PathVariable Long customerId) {
-        List<Address> addresses = addressService.findAddressesByCustomerId(customerId);
+    public ResponseEntity<List<AddressDTO>> getCustomerAddresses() {
+        Long authenticatedUserId = getAuthenticatedUserId(); // Giriş yapan kullanıcının kimliğini al
+
+        List<Address> addresses = addressService.findAddressesByCustomerId(authenticatedUserId);
         List<AddressDTO> addressDTOS = new ArrayList<>();
         for (Address address : addresses) {
             AddressDTO addressDTO = AddressMapper.entityToDto(address);
@@ -41,16 +44,19 @@ public class AddressController {
         return addressDTO;
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteAddress(@PathVariable Long id) {
-        addressService.deleteAddressById(id);
+    @DeleteMapping("/{addressId}")
+    public ResponseEntity<Void> deleteCustomerAddress(@PathVariable Long addressId) {
+        Long authenticatedUserId = getAuthenticatedUserId(); // GİRİŞ YAPAN KULLANICININ KİMLİĞİNİ DOĞRULA
+
+        // Adresin kullanıcıya ait olup olmadığını kontrol et
+        Address address = addressService.findAddressById(addressId);
+        if (address == null || !address.getCustomer().getId().equals(authenticatedUserId)) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN); // ADDRESS HATALARI
+        }
+
+        addressService.deleteAddressByCustomer(authenticatedUserId, addressId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    @DeleteMapping("/{customerId}/{addressId}")
-    public ResponseEntity<Void> deleteCustomerAddress(@PathVariable Long customerId, @PathVariable Long addressId) {
-        addressService.deleteAddressByCustomer(customerId, addressId);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-    }
 
 }

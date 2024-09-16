@@ -48,7 +48,7 @@ public class SecurityConfiguration {
                     auth.requestMatchers(HttpMethod.PUT, "/category/**").hasAuthority("ADMIN");
                     auth.requestMatchers(HttpMethod.DELETE, "/category/**").hasAuthority("ADMIN");
 
-                    //SADECE SELLERIN
+                    //SADECE SELLER
                     auth.requestMatchers(HttpMethod.POST, "/product/**").hasAuthority("SELLER");
                     auth.requestMatchers(HttpMethod.PUT, "/product/**").hasAuthority("SELLER");
                     auth.requestMatchers(HttpMethod.DELETE, "/product/**").hasAuthority("SELLER");

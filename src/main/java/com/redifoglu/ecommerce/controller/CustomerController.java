@@ -6,12 +6,14 @@ import com.redifoglu.ecommerce.dto.OrderDTO;
 import com.redifoglu.ecommerce.entity.Address;
 import com.redifoglu.ecommerce.entity.Order;
 import com.redifoglu.ecommerce.entity.user.Customer;
+import com.redifoglu.ecommerce.exceptions.NotFoundException;
 import com.redifoglu.ecommerce.mapper.AddressMapper;
 import com.redifoglu.ecommerce.mapper.CustomerMapper;
 import com.redifoglu.ecommerce.mapper.OrderMapper;
 import com.redifoglu.ecommerce.service.AddressService;
 import com.redifoglu.ecommerce.service.CustomerService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -23,7 +25,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/customer")
-public class CustomerController {
+public class CustomerController extends BaseController{
 
     private CustomerService customerService;
     private AddressService addressService;
@@ -67,21 +69,18 @@ public class CustomerController {
 
     //ADDRESS EKLE
     @PostMapping("/addAddress")
-    public AddressDTO addAddress(@RequestBody Address address) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null && authentication.isAuthenticated()) {
-            Object principal = authentication.getPrincipal();
+    public ResponseEntity<AddressDTO> addAddress(@RequestBody Address address) {
+        Long authenticatedUserId = getAuthenticatedUserId(); // KİMLİĞİ DOĞRULA
 
-            if (principal instanceof UserDetails) {
-                String username = ((UserDetails) principal).getUsername();
-                Customer customer = customerService.findCustomerByEmail(username);
-
-                address.setCustomer(customer);
-                Address savedAddress = addressService.addAddress(address);
-                return AddressMapper.entityToDto(savedAddress);
-            }
+        // Kullanıcıya ait müşteri bilgilerini al
+        Customer customer = customerService.findById(authenticatedUserId);
+        if (customer == null) {
+            throw new NotFoundException("Customer not found with ID: " + authenticatedUserId);
         }
-        throw new RuntimeException();
+
+        address.setCustomer(customer);
+        Address savedAddress = addressService.addAddress(address);
+        return new ResponseEntity<>(AddressMapper.entityToDto(savedAddress), HttpStatus.CREATED);
     }
 
     @DeleteMapping("/{id}")

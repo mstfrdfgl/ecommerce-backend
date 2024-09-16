@@ -20,9 +20,17 @@ public class AddressService {
     private CustomerService customerService;
 
     @Autowired
-    public AddressService(AddressRepository addressRepository,CustomerService customerService) {
+    public AddressService(AddressRepository addressRepository, CustomerService customerService) {
         this.addressRepository = addressRepository;
-        this.customerService=customerService;
+        this.customerService = customerService;
+    }
+
+    public Address findAddressById(Long addressId) throws NotFoundException {
+        Optional<Address> address = addressRepository.findById(addressId);
+        if (address.isPresent()) {
+            return address.get();
+        }
+        throw new NotFoundException("Customer not found with ID: " + addressId);
     }
 
     public List<Address> findAddressesByCustomerId(Long customerId) throws NotFoundException {

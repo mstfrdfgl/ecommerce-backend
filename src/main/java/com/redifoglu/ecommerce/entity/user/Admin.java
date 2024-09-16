@@ -1,6 +1,8 @@
 package com.redifoglu.ecommerce.entity.user;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -24,9 +26,13 @@ public class Admin implements UserDetails {
     @Column(name = "id")
     private Long id;
 
+    @NotBlank(message = "Username is mandatory")
+    @Size(min = 3, max = 50, message = "Username must be between 3 and 50 characters")
     @Column(name = "username")
     private String username;
 
+    @NotBlank(message = "Password is mandatory")
+    @Size(min = 3, max = 68, message = "Password must be between 3 and 50 characters")
     @Column(name = "password")
     private String password;
 
