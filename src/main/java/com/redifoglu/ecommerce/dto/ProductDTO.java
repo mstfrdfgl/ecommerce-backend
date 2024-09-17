@@ -1,8 +1,10 @@
 package com.redifoglu.ecommerce.dto;
 
+import java.math.BigDecimal;
+
 public record ProductDTO(Long id,
                          String name,
-                         Double price,
+                         BigDecimal price,
                          Integer stock,
                          String brand,
                          Long categoryId,

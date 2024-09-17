@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.Optional;
 
 @Service
@@ -53,8 +54,8 @@ public class CartService {
                 .orElseGet(() -> {
                     Cart cart = new Cart();
                     cart.setCustomer(customer);
-                    cart.setItemTotal(0.0);
-                    cart.setGrandTotal(0.0);
+                    cart.setItemTotal(BigDecimal.valueOf(0.0));
+                    cart.setGrandTotal(BigDecimal.valueOf(0.0));
                     return cartRepository.save(cart);
                 });
     }
@@ -68,9 +69,12 @@ public class CartService {
 
         cart.getProducts().add(product);
 
-        double itemTotal = cart.getProducts().stream()
-                .mapToDouble(Product::getPrice)
-                .sum();
+//        double itemTotal = cart.getProducts().stream()
+//                .mapToDouble(Product::getPrice)
+//                .sum();
+        BigDecimal itemTotal = cart.getProducts().stream()
+                .map(Product::getPrice) // BigDecimal olarak fiyatı alır
+                .reduce(BigDecimal.ZERO, BigDecimal::add); // Toplamı BigDecimal ile hesaplar
 
         cart.setItemTotal(itemTotal);
         cart.setGrandTotal(itemTotal);
@@ -81,8 +85,8 @@ public class CartService {
     @Transactional
     public void clearCart(Cart cart) {
         cart.getProducts().clear();
-        cart.setItemTotal(0.0);
-        cart.setGrandTotal(0.0);
+        cart.setItemTotal(BigDecimal.valueOf(0.0));
+        cart.setGrandTotal(BigDecimal.valueOf(0.0));
         cartRepository.save(cart);
     }
 

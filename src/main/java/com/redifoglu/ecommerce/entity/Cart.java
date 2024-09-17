@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,10 +25,10 @@ public class Cart {
     private Long id;
 
     @Column(name = "item_total")
-    private Double itemTotal;
+    private BigDecimal itemTotal;
 
     @Column(name = "grand_total")
-    private Double grandTotal;
+    private BigDecimal grandTotal;
 
     @OneToOne
     @JoinColumn(name = "customer_id")
