@@ -3,6 +3,9 @@ package com.redifoglu.ecommerce.entity;
 import com.redifoglu.ecommerce.entity.user.Customer;
 import com.redifoglu.ecommerce.enums.Status;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.FutureOrPresent;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -27,16 +30,21 @@ public class Order {
     @Column(name = "id")
     private Long id;
 
+    @NotNull(message = "Order date cannot be null")
     @Column(name = "order_date")
     private LocalDate orderDate;
 
+    @NotNull(message = "Amount cannot be null")
+    @Min(value = 0, message = "Amount must be a positive number")
     @Column(name = "amount")
     private BigDecimal amount;
 
+    @NotNull(message = "Status cannot be null")
     @Enumerated(value = EnumType.STRING)
     @Column(name = "status")
     private Status status;
 
+    @FutureOrPresent(message = "Shipping date must be in the future or present")
     @Column(name = "shipping_date")
     private LocalDate shippingDate;
 
@@ -53,4 +61,12 @@ public class Order {
 
     @OneToMany(mappedBy = "order")
     private List<OrderItem> orderItems=new ArrayList<>();
+
+    @Transient
+    public boolean isValid() {
+        if (shippingDate != null && orderDate != null) {
+            return shippingDate.isAfter(orderDate) || shippingDate.isEqual(orderDate);
+        }
+        return true;
+    }
 }

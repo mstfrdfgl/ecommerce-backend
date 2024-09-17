@@ -47,13 +47,16 @@ public class SecurityConfiguration {
                             "/admin/**",
                             "/customer/customers",
                             "/seller/{id}/**",
-                            "seller/phone").hasAuthority("ADMIN");
+                            "seller/phone",
+                            "/order/update",
+                            "/order/orders").hasAuthority("ADMIN");
                     auth.requestMatchers(HttpMethod.POST, "/category/**").hasAuthority("ADMIN");
                     auth.requestMatchers(HttpMethod.PUT, "/category/**").hasAuthority("ADMIN");
                     auth.requestMatchers(HttpMethod.DELETE, "/category/**").hasAuthority("ADMIN");
                     auth.requestMatchers(HttpMethod.GET, "/customer",
                             "/customers").hasAuthority("ADMIN");
                     auth.requestMatchers(HttpMethod.DELETE, "/customer").hasAuthority("ADMIN");
+                    auth.requestMatchers(HttpMethod.DELETE, "/product/**").hasAuthority("ADMIN");
 
                     //SADECE SELLER
                     auth.requestMatchers(HttpMethod.POST, "/product/**").hasAuthority("SELLER");
@@ -62,10 +65,11 @@ public class SecurityConfiguration {
 
                     //SADECE CUSTOMER
                     auth.requestMatchers("/cart",
-                            "/order",
                             "/address",
                             "customer/address/**",
-                            "/customer/orders").hasAuthority("CUSTOMER");
+                            "/customer/orders",
+                            "/order/create",
+                            "/order/my-orders").hasAuthority("CUSTOMER");
 
                     auth.anyRequest().authenticated();
                 })

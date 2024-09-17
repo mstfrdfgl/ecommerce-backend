@@ -3,6 +3,7 @@ package com.redifoglu.ecommerce.service;
 import com.redifoglu.ecommerce.entity.user.Admin;
 import com.redifoglu.ecommerce.entity.user.Customer;
 import com.redifoglu.ecommerce.entity.user.Seller;
+import com.redifoglu.ecommerce.exceptions.NotFoundException;
 import com.redifoglu.ecommerce.repository.AdminRepository;
 import com.redifoglu.ecommerce.repository.CustomerRepository;
 import com.redifoglu.ecommerce.repository.SellerRepository;
@@ -36,7 +37,7 @@ public class LoginService implements UserDetailsService {
 //    }
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+    public UserDetails loadUserByUsername(String username) throws NotFoundException {
 
         Admin admin = adminRepository.findAdminByUsername(username).orElse(null);
         if (admin != null) {
@@ -53,6 +54,6 @@ public class LoginService implements UserDetailsService {
             return customer;
         }
 
-        throw new UsernameNotFoundException("Kullanıcı bulunamadı: " + username);
+        throw new UsernameNotFoundException("User not found with username: " + username);
     }
 }

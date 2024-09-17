@@ -45,7 +45,7 @@ public class ProductController extends BaseController {
         }
         return ResponseEntity.ok(productDTOS);
     }
-    
+
     @GetMapping("/{id}")
     public ResponseEntity<ProductDTO> getProductById(@PathVariable Long id) {
         Product product = productService.findProductById(id);
