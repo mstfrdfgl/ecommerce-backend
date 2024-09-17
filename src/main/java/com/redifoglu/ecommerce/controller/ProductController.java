@@ -7,6 +7,7 @@ import com.redifoglu.ecommerce.entity.user.Seller;
 import com.redifoglu.ecommerce.exceptions.NotFoundException;
 import com.redifoglu.ecommerce.mapper.ProductMapper;
 import com.redifoglu.ecommerce.service.CategoryService;
+import com.redifoglu.ecommerce.service.OrderItemService;
 import com.redifoglu.ecommerce.service.ProductService;
 import com.redifoglu.ecommerce.service.SellerService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,12 +28,15 @@ public class ProductController extends BaseController {
     private ProductService productService;
     private SellerService sellerService;
     private CategoryService categoryService;
+    private OrderItemService orderItemService;
 
     @Autowired
-    public ProductController(ProductService productService, SellerService sellerService, CategoryService categoryService) {
+    public ProductController(ProductService productService, SellerService sellerService, CategoryService categoryService,
+                             OrderItemService orderItemService) {
         this.productService = productService;
         this.sellerService = sellerService;
         this.categoryService = categoryService;
+        this.orderItemService = orderItemService;
     }
 
     @GetMapping
@@ -53,14 +57,25 @@ public class ProductController extends BaseController {
     }
 
     @GetMapping("/category/{categoryId}")
-    public ResponseEntity<List<ProductDTO>> getProductsByCategory(@PathVariable Long categoryId){
-        List<Product> products=productService.findProductsByCategoryId(categoryId);
-        List<ProductDTO> productDTOS=new ArrayList<>();
+    public ResponseEntity<List<ProductDTO>> getProductsByCategory(@PathVariable Long categoryId) {
+        List<Product> products = productService.findProductsByCategoryId(categoryId);
+        List<ProductDTO> productDTOS = new ArrayList<>();
         for (Product product : products) {
             ProductDTO productDTO = ProductMapper.entityToDto(product);
             productDTOS.add(productDTO);
         }
         return ResponseEntity.ok(productDTOS);
+    }
+
+    @GetMapping("/bestseller")
+    public ResponseEntity<List<ProductDTO>> getBestSellingProducts() {
+        List<Product> topSellingProducts = orderItemService.findTopSellingProducts(100);
+        List<ProductDTO> productDTOS = new ArrayList<>();
+        for (Product product : topSellingProducts) {
+            ProductDTO productDTO = ProductMapper.entityToDto(product);
+            productDTOS.add(productDTO);
+        }
+        return new ResponseEntity<>(productDTOS, HttpStatus.OK);
     }
 
     //SEÇİLEN İDDEKİ KATEGORİYE YENİ ÜRÜN EKLEME. SELLER OTOMATİK OLARAK BELİRLENİYOR

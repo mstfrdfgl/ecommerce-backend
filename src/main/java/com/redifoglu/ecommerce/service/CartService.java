@@ -69,9 +69,6 @@ public class CartService {
 
         cart.getProducts().add(product);
 
-//        double itemTotal = cart.getProducts().stream()
-//                .mapToDouble(Product::getPrice)
-//                .sum();
         BigDecimal itemTotal = cart.getProducts().stream()
                 .map(Product::getPrice) // BigDecimal olarak fiyatı alır
                 .reduce(BigDecimal.ZERO, BigDecimal::add); // Toplamı BigDecimal ile hesaplar
