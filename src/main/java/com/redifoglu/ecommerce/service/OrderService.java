@@ -1,5 +1,6 @@
 package com.redifoglu.ecommerce.service;
 
+import com.redifoglu.ecommerce.dto.CustomerOrderStatsDTO;
 import com.redifoglu.ecommerce.entity.*;
 import com.redifoglu.ecommerce.entity.user.Customer;
 import com.redifoglu.ecommerce.enums.PaymentMethods;
@@ -198,5 +199,9 @@ public class OrderService {
             productService.save(product);
         }
         orderRepository.save(order);
+    }
+
+    public List<CustomerOrderStatsDTO> getTopCustomersByDeliveredOrders() {
+        return orderRepository.findTop100CustomersByDeliveredOrders();
     }
 }

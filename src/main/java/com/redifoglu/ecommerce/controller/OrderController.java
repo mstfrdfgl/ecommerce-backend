@@ -1,5 +1,6 @@
 package com.redifoglu.ecommerce.controller;
 
+import com.redifoglu.ecommerce.dto.CustomerOrderStatsDTO;
 import com.redifoglu.ecommerce.dto.OrderDTO;
 import com.redifoglu.ecommerce.dto.OrderUpdateDTO;
 import com.redifoglu.ecommerce.entity.Order;
@@ -76,6 +77,10 @@ public class OrderController extends BaseController {
         return new ResponseEntity<>(orderDTOs, HttpStatus.OK);
     }
 
+    @GetMapping("/top-customers")
+    public List<CustomerOrderStatsDTO> getTopCustomersByDeliveredOrders() {
+        return orderService.getTopCustomersByDeliveredOrders();
+    }
 
     @PostMapping("/create")
     public ResponseEntity<OrderDTO> createOrder(@RequestParam PaymentMethods paymentMethod) throws Exception {

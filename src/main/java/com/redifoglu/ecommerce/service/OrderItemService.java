@@ -31,11 +31,10 @@ public class OrderItemService {
     public List<Product> findTopSellingProducts(int limit) {
         List<OrderItem> orderItems = orderItemRepository.findAll();
 
-        // Product'ları say ve en çok satanları bul
+        //PRODUCID YE GÖRE SAYIM YAPARAK EN ÇOK SATANLAR BULUNUR
         Map<Product, Long> productCounts = orderItems.stream()
                 .collect(Collectors.groupingBy(OrderItem::getProduct, Collectors.counting()));
 
-        // En çok satan limit kadar ürünü dön
         return productCounts.entrySet().stream()
                 .sorted(Map.Entry.<Product, Long>comparingByValue().reversed())
                 .limit(limit)
