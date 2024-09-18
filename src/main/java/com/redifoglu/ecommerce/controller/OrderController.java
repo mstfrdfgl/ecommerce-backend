@@ -82,12 +82,34 @@ public class OrderController extends BaseController {
         Long authenticatedUserId = getAuthenticatedUserId(); // KİMLİĞİ DOĞRULA
 
         Customer customer = customerService.findById(authenticatedUserId);
-        if (customer == null) {
-            throw new NotFoundException("Customer not found with ID: " + authenticatedUserId);
-        }
 
         Order order = orderService.createOrder(customer.getId(), paymentMethod);
         return new ResponseEntity<>(OrderMapper.entityToDto(order), HttpStatus.CREATED);
+    }
+
+    @PutMapping("/{orderId}/shipped-delivery")
+    public ResponseEntity<Void> shippedDelivery(@PathVariable Long orderId) throws Exception {
+        orderService.shippedDelivery(orderId);
+        return ResponseEntity.ok().build();
+    }
+
+    //SADECE ADMIN YETKİSİNE SAHİP KULLANICI ONAYLAYABİLİR
+    @PutMapping("/{orderId}/confirm-delivery")
+    public ResponseEntity<Void> confirmDelivery(@PathVariable Long orderId) throws Exception {
+        orderService.confirmDelivery(orderId);
+        return ResponseEntity.ok().build();
+    }
+
+    //SADECE LOGİN OLAN CUSTOMER KENDİ SİPARİŞLERİNİ İPTAL EDEBİLİR
+    @PutMapping("/{orderId}/cancel-delivery")
+    public ResponseEntity<String> cancelDelivery(@PathVariable Long orderId) throws Exception {
+        Long authenticatedUserId = getAuthenticatedUserId(); // KİMLİĞİ DOĞRULA
+
+        Customer customer = customerService.findById(authenticatedUserId);
+
+
+        orderService.cancelDelivery(orderId, customer.getId());
+        return ResponseEntity.ok("Order successfully cancelled");
     }
 
     @PutMapping("/update/{id}")

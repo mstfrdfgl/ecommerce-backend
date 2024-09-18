@@ -3,6 +3,7 @@ package com.redifoglu.ecommerce.service;
 import com.redifoglu.ecommerce.entity.Cart;
 import com.redifoglu.ecommerce.entity.Product;
 import com.redifoglu.ecommerce.entity.user.Customer;
+import com.redifoglu.ecommerce.exceptions.InsufficientStockException;
 import com.redifoglu.ecommerce.repository.CartRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -25,7 +26,7 @@ public class CartService {
         this.productService = productService;
     }
 
-    public Cart save(Cart cart){
+    public Cart save(Cart cart) {
         return cartRepository.save(cart);
     }
 
@@ -47,7 +48,7 @@ public class CartService {
 
     //MÜŞTERİNİN SEPETİ YOKSA OLUŞTUR VARSA VAR OLANI DÖN
     @Transactional
-    public Cart findOrCreateCartForCustomer(Long customerId) throws Exception {
+    public Cart findOrCreateCartForCustomer(Long customerId) {
         Customer customer = customerService.findById(customerId);
 
         return cartRepository.findByCustomer(customer)
@@ -62,16 +63,20 @@ public class CartService {
 
     //MÜŞTERİ İDSİNE GÖRE SEPETE ÜRÜN EKLE
     @Transactional
-    public Cart addProductToCart(Long customerId, Long productId) throws Exception {
+    public Cart addProductToCart(Long customerId, Long productId) throws InsufficientStockException {
         Cart cart = findOrCreateCartForCustomer(customerId);
 
         Product product = productService.findProductById(productId);
+        //STOK KONTROLÜ
+        if (product.getStock() < 1) {
+            throw new InsufficientStockException("This products is out of stock " + product.getName());
+        }
 
         cart.getProducts().add(product);
 
         BigDecimal itemTotal = cart.getProducts().stream()
-                .map(Product::getPrice) // BigDecimal olarak fiyatı alır
-                .reduce(BigDecimal.ZERO, BigDecimal::add); // Toplamı BigDecimal ile hesaplar
+                .map(Product::getPrice)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         cart.setItemTotal(itemTotal);
         cart.setGrandTotal(itemTotal);

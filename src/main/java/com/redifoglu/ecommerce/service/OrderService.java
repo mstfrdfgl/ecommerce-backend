@@ -7,6 +7,7 @@ import com.redifoglu.ecommerce.enums.Status;
 import com.redifoglu.ecommerce.exceptions.NotFoundException;
 import com.redifoglu.ecommerce.exceptions.UnauthorizedException;
 import com.redifoglu.ecommerce.repository.OrderRepository;
+import org.aspectj.weaver.ast.Or;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,14 +25,17 @@ public class OrderService {
     private CustomerService customerService;
     private PaymentService paymentService;
     private OrderItemService orderItemService;
+    private ProductService productService;
 
     @Autowired
-    public OrderService(OrderRepository orderRepository, CartService cartService, CustomerService customerService, PaymentService paymentService, OrderItemService orderItemService) {
+    public OrderService(OrderRepository orderRepository, CartService cartService, CustomerService customerService,
+                        PaymentService paymentService, OrderItemService orderItemService, ProductService productService) {
         this.orderRepository = orderRepository;
         this.cartService = cartService;
         this.customerService = customerService;
         this.paymentService = paymentService;
         this.orderItemService = orderItemService;
+        this.productService = productService;
     }
 
     public Order findById(Long id) throws NotFoundException {
@@ -67,12 +71,10 @@ public class OrderService {
         Customer customer = customerService.findById(customerId);
         Cart cart = cartService.findCartByCustomer(customer);
 
-        // Check address
         if (customer.getAddresses() == null || customer.getAddresses().isEmpty()) {
             throw new NotFoundException("Address is required to place an order");
         }
 
-        // Create new order
         Order order = new Order();
         order.setOrderDate(LocalDate.now());
         order.setAmount(cart.getGrandTotal());
@@ -80,17 +82,24 @@ public class OrderService {
         order.setCart(cart);
         order.setCustomer(cart.getCustomer());
 
-        // Save order
         Order savedOrder = orderRepository.save(order);
 
-        // Create order items
         createOrderItems(cart, savedOrder);
 
-        // Process payment and clear cart
+        updateProductStock(cart);
+
         paymentService.processPayment(savedOrder, paymentMethod);
         cartService.clearCart(cart);
 
         return savedOrder;
+    }
+
+    @Transactional
+    private void updateProductStock(Cart cart) {
+        for (Product product : cart.getProducts()) {
+            product.setStock(product.getStock() - 1);
+            productService.save(product);
+        }
     }
 
     @Transactional
@@ -117,9 +126,77 @@ public class OrderService {
         return orderRepository.save(existingOrder);
     }
 
+
     @Transactional
     public void deleteOrder(Long id) {
         Order order = findById(id);
         orderRepository.delete(order);
+    }
+
+    @Transactional
+    public void shippedDelivery(Long orderId) throws Exception {
+        Order order = findById(orderId);
+
+        if (order.getStatus() == Status.CANCELLED) {
+            throw new Exception("Cancelled orders cannot be shipped.");
+        }
+
+        if (order.getStatus() == Status.DELIVERED) {
+            throw new Exception("Delivered orders cannot be shipped again.");
+        }
+
+        if (order.getStatus() == Status.SHIPPED) {
+            throw new Exception("Order is already shipped.");
+        }
+
+        order.setStatus(Status.SHIPPED);
+
+        orderRepository.save(order);
+    }
+
+    @Transactional
+    public void confirmDelivery(Long orderId) throws Exception {
+        Order order = findById(orderId);
+
+        if (order.getStatus() == Status.CANCELLED) {
+            throw new Exception("Cancelled orders cannot be delivered.");
+        }
+
+        if (order.getStatus() == Status.DELIVERED) {
+            throw new Exception("Order is already delivered.");
+        }
+
+        order.setStatus(Status.DELIVERED);
+        order.setShippingDate(LocalDate.now());
+
+        orderRepository.save(order);
+    }
+
+    @Transactional
+    public void cancelDelivery(Long orderId, Long customerId) throws Exception {
+        Order order = findById(orderId);
+
+        if (!order.getCustomer().getId().equals(customerId)) {
+            throw new Exception("You can only cancel your own orders.");
+        }
+
+        if (order.getStatus() == Status.DELIVERED) {
+            throw new Exception("Order has already been delivered and cannot be cancelled.");
+        }
+
+        if (order.getStatus() == Status.CANCELLED) {
+            throw new Exception("Order has already been cancelled");
+        }
+
+        //SİPARİŞ DURUMUNU İPTAL OLARAK GÜNCELLE
+        order.setStatus(Status.CANCELLED);
+
+        //İPTAL EDİLEN SİPARİŞTEKİ STOK MİKTARLARINI GERİ YÜKLE
+        for (OrderItem orderItem : order.getOrderItems()) {
+            Product product = orderItem.getProduct();
+            product.setStock(product.getStock() + orderItem.getQuantity());
+            productService.save(product);
+        }
+        orderRepository.save(order);
     }
 }

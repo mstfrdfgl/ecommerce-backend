@@ -49,7 +49,8 @@ public class SecurityConfiguration {
                             "/seller/{id}/**",
                             "seller/phone",
                             "/order/update",
-                            "/order/orders").hasAuthority("ADMIN");
+                            "/order/orders",
+                            "/order/{orderId}/confirm-delivery").hasAuthority("ADMIN");
                     auth.requestMatchers(HttpMethod.POST, "/category/**").hasAuthority("ADMIN");
                     auth.requestMatchers(HttpMethod.PUT, "/category/**").hasAuthority("ADMIN");
                     auth.requestMatchers(HttpMethod.DELETE, "/category/**").hasAuthority("ADMIN");
@@ -59,6 +60,7 @@ public class SecurityConfiguration {
                     auth.requestMatchers(HttpMethod.DELETE, "/product/**").hasAuthority("ADMIN");
 
                     //SADECE SELLER
+                    auth.requestMatchers("/order/{orderId}/shipped-delivery");
                     auth.requestMatchers(HttpMethod.POST, "/product/**").hasAuthority("SELLER");
                     auth.requestMatchers(HttpMethod.PUT, "/product/**").hasAuthority("SELLER");
                     auth.requestMatchers(HttpMethod.DELETE, "/product/**").hasAuthority("SELLER");
@@ -69,7 +71,8 @@ public class SecurityConfiguration {
                             "customer/address/**",
                             "/customer/orders",
                             "/order/create",
-                            "/order/my-orders").hasAuthority("CUSTOMER");
+                            "/order/my-orders",
+                            "/order/{orderId}/cancel-delivery").hasAuthority("CUSTOMER");
 
                     auth.anyRequest().authenticated();
                 })
