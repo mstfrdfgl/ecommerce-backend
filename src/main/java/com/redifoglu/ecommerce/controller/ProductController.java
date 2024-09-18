@@ -66,7 +66,7 @@ public class ProductController extends BaseController {
         }
         return ResponseEntity.ok(productDTOS);
     }
-
+    //EN ÇOK SATAN ÜRÜNLERİ LİSTELELİYOR
     @GetMapping("/bestseller")
     public ResponseEntity<List<ProductDTO>> getBestSellingProducts() {
         List<Product> topSellingProducts = orderItemService.findTopSellingProducts(100);

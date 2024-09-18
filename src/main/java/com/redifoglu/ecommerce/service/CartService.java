@@ -4,7 +4,9 @@ import com.redifoglu.ecommerce.entity.Cart;
 import com.redifoglu.ecommerce.entity.Product;
 import com.redifoglu.ecommerce.entity.user.Customer;
 import com.redifoglu.ecommerce.exceptions.InsufficientStockException;
+import com.redifoglu.ecommerce.exceptions.NotFoundException;
 import com.redifoglu.ecommerce.repository.CartRepository;
+import org.aspectj.weaver.ast.Not;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,20 +32,20 @@ public class CartService {
         return cartRepository.save(cart);
     }
 
-    public Cart findById(Long id) {
+    public Cart findById(Long id) throws NotFoundException{
         Optional<Cart> cart = cartRepository.findById(id);
         if (cart.isPresent()) {
             return cart.get();
         }
-        throw new RuntimeException();
+        throw new NotFoundException("Cart not found with ID: " + id);
     }
 
-    public Cart findCartByCustomer(Customer customer) {
+    public Cart findCartByCustomer(Customer customer) throws NotFoundException {
         Optional<Cart> cart = cartRepository.findByCustomer(customer);
         if (cart.isPresent()) {
             return cart.get();
         }
-        throw new RuntimeException();
+        throw new NotFoundException("Cart not found with Customer: " + customer.getEmail());
     }
 
     //MÜŞTERİNİN SEPETİ YOKSA OLUŞTUR VARSA VAR OLANI DÖN
@@ -67,6 +69,7 @@ public class CartService {
         Cart cart = findOrCreateCartForCustomer(customerId);
 
         Product product = productService.findProductById(productId);
+
         //STOK KONTROLÜ
         if (product.getStock() < 1) {
             throw new InsufficientStockException("This products is out of stock " + product.getName());
@@ -80,9 +83,30 @@ public class CartService {
 
         cart.setItemTotal(itemTotal);
         cart.setGrandTotal(itemTotal);
-
         return cartRepository.save(cart);
     }
+
+    @Transactional
+    public Cart removeProductFromCart(Long customerId, Long productId) {
+        Cart cart = findOrCreateCartForCustomer(customerId);
+
+        Product product = productService.findProductById(productId);
+
+        if (!cart.getProducts().contains(product)) {
+            throw new NotFoundException("Product not found in cart: " + product.getName());
+        }
+
+        cart.getProducts().remove(product);
+
+        BigDecimal itemTotal = cart.getProducts().stream()
+                .map(Product::getPrice)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        cart.setItemTotal(itemTotal);
+        cart.setGrandTotal(itemTotal);
+        return cartRepository.save(cart);
+    }
+
 
     @Transactional
     public void clearCart(Cart cart) {

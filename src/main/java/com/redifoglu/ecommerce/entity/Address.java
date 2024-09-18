@@ -45,4 +45,12 @@ public class Address {
     @ManyToOne
     @JoinColumn(name = "customer_id")
     private Customer customer;
+
+    public Address(String city, String state, String description, String postalCode, Customer customer) {
+        this.city = city;
+        this.state = state;
+        this.description = description;
+        this.postalCode = postalCode;
+        this.customer = customer;
+    }
 }

@@ -7,6 +7,7 @@ import com.redifoglu.ecommerce.mapper.CartMapper;
 import com.redifoglu.ecommerce.service.CartService;
 import com.redifoglu.ecommerce.service.CustomerService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -17,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/cart")
-public class CartController {
+public class CartController extends BaseController {
 
     private CartService cartService;
     private CustomerService customerService;
@@ -29,19 +30,22 @@ public class CartController {
     }
 
     @PostMapping("/{productId}")
-    public CartDTO addProductToCart(@PathVariable Long productId) throws Exception {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null && authentication.isAuthenticated()) {
-            Object principal = authentication.getPrincipal();
+    public ResponseEntity<CartDTO> addProductToCart(@PathVariable Long productId) {
+        Long customerId = getAuthenticatedUserId();
+        Customer customer = customerService.findById(customerId);
 
-            if (principal instanceof UserDetails) {
-                String username = ((UserDetails) principal).getUsername();
-                Customer customer = customerService.findCustomerByEmail(username);
-
-                Cart cart = cartService.addProductToCart(customer.getId(), productId);
-                return CartMapper.entityToDto(cart);
-            }
-        }
-        throw new RuntimeException();
+        Cart cart = cartService.addProductToCart(customer.getId(), productId);
+        return ResponseEntity.ok(CartMapper.entityToDto(cart));
     }
+
+    @PostMapping("/remove/{productId}")
+    public ResponseEntity<CartDTO> removeProductFromCart(@PathVariable Long productId) {
+        Long customerId = getAuthenticatedUserId();
+        Customer customer = customerService.findById(customerId);
+
+        Cart cart = cartService.removeProductFromCart(customer.getId(), productId);
+        return ResponseEntity.ok(CartMapper.entityToDto(cart));
+
+    }
+
 }

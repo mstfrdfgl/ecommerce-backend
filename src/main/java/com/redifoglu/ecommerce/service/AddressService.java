@@ -43,8 +43,7 @@ public class AddressService {
     public void deleteAddressByCustomer(Long customerId, Long addressId) throws NotFoundException {
         Customer customer = customerService.findById(customerId);
 
-        Address address = addressRepository.findById(addressId)
-                .orElseThrow(() -> new NotFoundException("Address with ID: " + addressId + " not found."));
+        Address address = findAddressById(addressId);
 
         if (!address.getCustomer().getId().equals(customerId)) {
             throw new NotFoundException("Address does not belong to the customer.");
