@@ -63,7 +63,6 @@ public class Customer implements UserDetails {
     @Column(name = "date_of_birth")
     private LocalDate dateOfBirth;
 
-    @NotNull(message = "Age is required")
     @Min(value = 1, message = "Age must be greater than 0")
     @Column(name = "age")
     private Integer age;
